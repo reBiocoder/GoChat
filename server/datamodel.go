@@ -2,7 +2,7 @@
 /*
  * @Author: zhoupeng
  * @Date: 2021-02-24 16:12:53
- * @LastEditTime: 2021-02-24 17:57:57
+ * @LastEditTime: 2021-02-24 18:12:01
  * @LastEditors: zhoupeng
  * @Description: API结构定义
  * @FilePath: /GoChat/server/datamodel.go
@@ -159,6 +159,22 @@ type MsgSetSub struct {
 	User string `json:"user,omitempty"`
 	Mode string `json:"mode,omitempty"`
 }
+
+const (
+	constMsgMetaDesc = 1 << iota
+	constMsgMetaSub
+	constMsgMetaData
+	constMsgMetaTags
+	constMsgMetaDel
+	constMsgMetaCred
+)
+const (
+	constMsgDelTopic = iota + 1
+	constMsgDelMsg
+	constMsgDelSub
+	constMsgDelUser
+	constMsgDelCred
+)
 
 // MsgSetDesc 是用户描述信息
 type MsgSetDesc struct {
