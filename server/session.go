@@ -11,6 +11,25 @@ import (
 	"github.com/tinode/chat/server/auth"
 )
 
+const sendTimeout = time.Millisecond * 7
+const sendQueueLimit = 128
+const deferredNotificationsTimeout = time.Second * 5
+
+var minSupportedVersionValue = parseVersion(minSupportedVersion)
+
+//用户传输消息的通信协议
+type SessionProto int
+
+//定义传输协议的所有蕾西
+const (
+	NONE SessionProto = iota
+	WEBSOCK
+	LPOLL
+	GRPC
+	PROXY
+	MULTIPLEX
+)
+
 // Session represents a single WS connection or a long polling session. A user may have multiple
 // sessions.
 type Session struct {
@@ -29,12 +48,14 @@ type Session struct {
 	// gRPC handle. Set only for gRPC clients.
 	grpcnode pbx.Node_MessageLoopServer
 
+	//TODO: 集群session暂时不考虑
 	// Reference to the cluster node where the session has originated. Set only for cluster RPC sessions.
-	clnode *ClusterNode
+	//clnode *ClusterNode
 
+	//TODO:多个proxy暂时不考虑
 	// Reference to multiplexing session. Set only for proxy sessions.
-	multi        *Session
-	proxiedTopic string
+	// multi        *Session
+	// proxiedTopic string
 
 	// IP address of the client. For long polling this is the IP of the last poll.
 	remoteAddr string
@@ -109,6 +130,17 @@ type Session struct {
 
 	// Field used only in cluster mode by topic master node.
 
+	//TODO:集群设置，暂时不考虑
 	// Type of proxy to master request being handled.
-	proxyReq ProxyReqType
+	//proxyReq ProxyReqType
+}
+
+//Subscription 用于表示session所订阅的topic
+type Subscription struct {
+	broadcast chan<- *ServerComMessage
+	//当session取消订阅，向所有的topic发送一个消息
+	done chan<- *sessionLeave
+	meta chan<- *metaReq
+	//当session更新时，向topic发送ping包
+	supd chan<- *sessionUpdate
 }
